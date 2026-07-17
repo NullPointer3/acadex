@@ -1,5 +1,11 @@
 # Acadex
 
+[![.NET](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![SQL Server](https://img.shields.io/badge/SQL_Server-EF_Core-CC2927?logo=microsoftsqlserver&logoColor=white)](https://learn.microsoft.com/en-us/ef/core/)
+[![Last commit](https://img.shields.io/github/last-commit/NullPointer3/acadex)](https://github.com/NullPointer3/acadex/commits/master)
+
 A school management system for admins, teachers, and students — covering student/teacher records, class rosters, timetables, attendance, and grades.
 
 ## Stack
