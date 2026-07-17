@@ -1,0 +1,21 @@
+# .NET
+server/**/bin/
+server/**/obj/
+*.user
+
+# Node
+client/node_modules/
+client/dist/
+client/*.tsbuildinfo
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vs/
+.vscode/
+.idea/
