@@ -1,10 +1,75 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-brand-50: #f5eeff;
+  --color-brand-100: #ede6ff;
+  --color-brand-200: #d9c2ff;
+  --color-brand-300: #bd94ff;
+  --color-brand-400: #9d5dff;
+  --color-brand-500: #863bff;
+  --color-brand-600: #7c22ff;
+  --color-brand-700: #6a0fe0;
+  --color-brand-800: #560cb8;
+  --color-brand-900: #430a8f;
+  --color-brand-950: #2a0660;
+
+  --color-accent-400: #6ecbff;
+  --color-accent-500: #47bfff;
+  --color-accent-600: #2aa6ec;
+
+  --color-good: #0ca30c;
+  --color-good-text-light: #006300;
+  --color-warning: #fab219;
+  --color-serious: #ec835a;
+  --color-critical: #d03b3b;
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
+  @apply bg-gray-50 text-gray-900 dark:bg-[#111016] dark:text-gray-100;
+}
+
+::selection {
+  @apply bg-brand-200 dark:bg-brand-800;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-toast-in {
+  animation: toast-in 0.18s ease-out;
 }

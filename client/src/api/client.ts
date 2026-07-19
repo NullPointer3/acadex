@@ -1,3 +1,8 @@
+import { ApiError } from './errors';
+import { isMockMode, handleMockRequest } from '../mocks/server';
+
+export { ApiError };
+
 const TOKEN_KEY = 'acadex_token';
 
 export function getToken(): string | null {
@@ -9,16 +14,14 @@ export function setToken(token: string | null): void {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.status = status;
-  }
-}
-
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
+
+  if (isMockMode) {
+    const body = options.body ? JSON.parse(options.body as string) : undefined;
+    return handleMockRequest<T>(path, options.method ?? 'GET', body, token);
+  }
+
   const headers: Record<string, string> = {
     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

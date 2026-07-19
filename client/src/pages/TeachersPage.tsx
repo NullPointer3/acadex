@@ -1,8 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { UserPlus, GraduationCap } from 'lucide-react';
 import { teachersApi, type CreateTeacherRequest } from '../api/teachers';
 import type { TeacherResponse } from '../types';
 import { Modal } from '../components/Modal';
 import { ApiError } from '../api/client';
+import { useToast } from '../context/ToastContext';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Button } from '../components/ui/Button';
+import { Field, Input } from '../components/ui/Field';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { DataTable, type Column } from '../components/ui/DataTable';
 
 const emptyForm: CreateTeacherRequest = {
   email: '',
@@ -15,11 +23,14 @@ const emptyForm: CreateTeacherRequest = {
 };
 
 export function TeachersPage() {
+  const toast = useToast();
   const [teachers, setTeachers] = useState<TeacherResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateTeacherRequest>(emptyForm);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<TeacherResponse | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   function load() {
     setLoading(true);
@@ -31,111 +42,139 @@ export function TeachersPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setSubmitting(true);
     try {
       await teachersApi.create(form);
       setShowForm(false);
       setForm(emptyForm);
       load();
+      toast.success('Teacher created.');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to create teacher.');
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Remove this teacher?')) return;
-    await teachersApi.remove(id);
-    load();
+  async function handleDelete() {
+    if (!pendingDelete) return;
+    try {
+      await teachersApi.remove(pendingDelete.id);
+      toast.success('Teacher removed.');
+      load();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Failed to remove teacher.');
+    } finally {
+      setPendingDelete(null);
+    }
   }
+
+  const columns: Column<TeacherResponse>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      sortValue: (t) => `${t.firstName} ${t.lastName}`,
+      render: (t) => (
+        <span className="font-medium text-gray-800 dark:text-gray-100">
+          {t.firstName} {t.lastName}
+        </span>
+      ),
+    },
+    { key: 'email', header: 'Email', sortValue: (t) => t.email, render: (t) => t.email },
+    { key: 'employeeNumber', header: 'Employee #', sortValue: (t) => t.employeeNumber, render: (t) => t.employeeNumber },
+    {
+      key: 'hireDate',
+      header: 'Hire Date',
+      sortValue: (t) => t.hireDate,
+      render: (t) => new Date(t.hireDate).toLocaleDateString(),
+    },
+    { key: 'phone', header: 'Phone', render: (t) => t.phoneNumber ?? '-' },
+    {
+      key: 'actions',
+      header: '',
+      className: 'text-right',
+      render: (t) => (
+        <button onClick={() => setPendingDelete(t)} className="text-critical hover:underline text-sm">
+          Remove
+        </button>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Teachers</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
-        >
-          Add Teacher
-        </button>
-      </div>
+      <PageHeader
+        title="Teachers"
+        description={`${teachers.length} teacher${teachers.length === 1 ? '' : 's'} on staff`}
+        action={
+          <Button icon={<UserPlus className="w-4 h-4" />} onClick={() => setShowForm(true)}>
+            Add Teacher
+          </Button>
+        }
+      />
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-gray-500">
-              <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Email</th>
-                <th className="px-4 py-2 font-medium">Employee #</th>
-                <th className="px-4 py-2 font-medium">Hire Date</th>
-                <th className="px-4 py-2 font-medium">Phone</th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {teachers.map((t) => (
-                <tr key={t.id} className="border-t border-gray-100">
-                  <td className="px-4 py-2">{t.firstName} {t.lastName}</td>
-                  <td className="px-4 py-2">{t.email}</td>
-                  <td className="px-4 py-2">{t.employeeNumber}</td>
-                  <td className="px-4 py-2">{new Date(t.hireDate).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{t.phoneNumber ?? '-'}</td>
-                  <td className="px-4 py-2 text-right">
-                    <button onClick={() => handleDelete(t.id)} className="text-red-600 hover:underline">
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {teachers.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
-                    No teachers yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        rows={teachers}
+        keyFor={(t) => t.id}
+        getSearchText={(t) => `${t.firstName} ${t.lastName} ${t.email} ${t.employeeNumber}`}
+        searchPlaceholder="Search teachers..."
+        loading={loading}
+        emptyState={
+          <EmptyState icon={<GraduationCap className="w-6 h-6" />} title="No teachers yet" description="Add your first teacher to get started." />
+        }
+      />
 
       {showForm && (
         <Modal title="Add Teacher" onClose={() => setShowForm(false)}>
           <form onSubmit={handleSubmit} className="space-y-3">
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="grid grid-cols-2 gap-3">
-              <input required placeholder="First name" value={form.firstName}
-                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="border border-gray-300 rounded-md px-3 py-2" />
-              <input required placeholder="Last name" value={form.lastName}
-                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="border border-gray-300 rounded-md px-3 py-2" />
+              <Field label="First name">
+                <Input required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+              </Field>
+              <Field label="Last name">
+                <Input required value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+              </Field>
             </div>
-            <input required type="email" placeholder="Email" value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2" />
-            <input required type="password" placeholder="Temporary password" value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2" />
-            <input required placeholder="Employee number" value={form.employeeNumber}
-              onChange={(e) => setForm({ ...form, employeeNumber: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2" />
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Hire date</label>
-              <input required type="date" value={form.hireDate}
-                onChange={(e) => setForm({ ...form, hireDate: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2" />
-            </div>
-            <input placeholder="Phone number (optional)" value={form.phoneNumber ?? ''}
-              onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2" />
-            <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700">
-              Create Teacher
-            </button>
+            <Field label="Email">
+              <Input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </Field>
+            <Field label="Temporary password">
+              <Input
+                required
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              />
+            </Field>
+            <Field label="Employee number">
+              <Input
+                required
+                value={form.employeeNumber}
+                onChange={(e) => setForm({ ...form, employeeNumber: e.target.value })}
+              />
+            </Field>
+            <Field label="Hire date">
+              <Input required type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
+            </Field>
+            <Field label="Phone number (optional)">
+              <Input value={form.phoneNumber ?? ''} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} />
+            </Field>
+            <Button type="submit" disabled={submitting} className="w-full">
+              {submitting ? 'Creating...' : 'Create Teacher'}
+            </Button>
           </form>
         </Modal>
+      )}
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Remove teacher?"
+          description={`${pendingDelete.firstName} ${pendingDelete.lastName} will be permanently removed.`}
+          onConfirm={handleDelete}
+          onCancel={() => setPendingDelete(null)}
+        />
       )}
     </div>
   );

@@ -1,7 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
+import { GraduationCap, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
+import { Field, Input } from '../components/ui/Field';
+import { Button } from '../components/ui/Button';
+
+const isMockMode = import.meta.env.VITE_USE_MOCKS === 'true';
+
+const DEMO_ACCOUNTS = [
+  { role: 'Admin', email: 'admin@acadex.local' },
+  { role: 'Teacher', email: 'emma.clarke@acadex.local' },
+  { role: 'Student', email: 'liam.carter@acadex.local' },
+] as const;
 
 export function LoginPage() {
   const { user, login } = useAuth();
@@ -12,12 +23,11 @@ export function LoginPage() {
 
   if (user) return <Navigate to="/" replace />;
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function doLogin(loginEmail: string, loginPassword: string) {
     setError(null);
     setSubmitting(true);
     try {
-      await login(email, password);
+      await login(loginEmail, loginPassword);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Login failed. Please try again.');
     } finally {
@@ -25,44 +35,90 @@ export function LoginPage() {
     }
   }
 
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    await doLogin(email, password);
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-lg shadow-md border border-gray-200">
-        <h1 className="text-2xl font-semibold text-indigo-600 mb-1">Acadex</h1>
-        <p className="text-sm text-gray-500 mb-6">Sign in to your school account</p>
+    <div className="min-h-screen flex bg-gray-50 dark:bg-[#111016]">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-accent-500 text-white flex-col justify-between p-12">
+        <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_20%_20%,white_1px,transparent_1px)] [background-size:28px_28px]" />
+        <div className="relative flex items-center gap-2">
+          <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur flex items-center justify-center font-bold">A</div>
+          <span className="text-xl font-semibold">Acadex</span>
+        </div>
+        <div className="relative max-w-md">
+          <h1 className="text-3xl font-semibold leading-tight mb-3">
+            Everything your school runs on, in one place.
+          </h1>
+          <p className="text-white/80 text-sm leading-relaxed">
+            Manage students, teachers, classes, timetables, attendance, and grades &mdash; built
+            for admins, teachers, and students alike.
+          </p>
+        </div>
+        <p className="relative text-xs text-white/60">&copy; {new Date().getFullYear()} Acadex</p>
+      </div>
 
-        {error && (
-          <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-            {error}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold">
+              A
+            </div>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white">Acadex</span>
           </div>
-        )}
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+          <div className="mb-6">
+            <div className="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mb-4">
+              <GraduationCap className="w-6 h-6 text-brand-600 dark:text-brand-300" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Welcome back</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to your school account</p>
+          </div>
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-6 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+          {error && (
+            <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300">
+              {error}
+            </div>
+          )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {submitting ? 'Signing in...' : 'Sign in'}
-        </button>
-      </form>
+          <div className="space-y-4">
+            <Field label="Email">
+              <Input type="email" required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
+            </Field>
+            <Field label="Password">
+              <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            </Field>
+          </div>
+
+          <Button type="submit" disabled={submitting} className="w-full mt-6" size="md">
+            {submitting ? 'Signing in...' : 'Sign in'}
+          </Button>
+
+          {isMockMode && (
+            <div className="mt-6 pt-5 border-t border-gray-200 dark:border-white/10">
+              <p className="text-xs font-medium text-gray-400 flex items-center gap-1.5 mb-3">
+                <Sparkles className="w-3.5 h-3.5" />
+                Demo mode &mdash; jump in as
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {DEMO_ACCOUNTS.map((acct) => (
+                  <button
+                    key={acct.email}
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => doLogin(acct.email, 'demo')}
+                    className="text-xs font-medium px-2 py-2 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-300 hover:bg-brand-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5 disabled:opacity-50"
+                  >
+                    {acct.role}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   );
 }
