@@ -12,7 +12,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-14 px-4">
+    <div className="animate-fade-in-up flex flex-col items-center justify-center text-center py-14 px-4">
       {icon && (
         <div className="mb-3 w-12 h-12 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500">
           {icon}

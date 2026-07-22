@@ -15,13 +15,16 @@ export function ConfirmDialog({
   onCancel: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onCancel}>
+    <div
+      className="animate-fade-in fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-50"
+      onClick={onCancel}
+    >
       <div
-        className="bg-white dark:bg-[#1a1a20] rounded-xl shadow-xl w-full max-w-sm p-5 border border-gray-200 dark:border-white/10"
+        className="animate-pop-in bg-white dark:bg-[#1a1a20] rounded-xl shadow-xl w-full max-w-sm p-5 border border-gray-200 dark:border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center shrink-0 animate-pulse">
             <AlertTriangle className="w-5 h-5 text-critical" />
           </div>
           <div>

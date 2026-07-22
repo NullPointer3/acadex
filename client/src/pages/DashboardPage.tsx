@@ -40,19 +40,21 @@ const QUICK_LINKS = [
 
 function QuickLinks({ role }: { role: string }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-      {QUICK_LINKS.filter((l) => !('roles' in l) || (l.roles as readonly string[]).includes(role)).map((l) => (
-        <Link
-          key={l.to}
-          to={l.to}
-          className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] hover:border-brand-300 dark:hover:border-brand-500/40 hover:shadow-sm transition-all"
-        >
-          <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-300 shrink-0">
-            <l.icon className="w-4.5 h-4.5" size={18} />
-          </div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{l.label}</span>
-        </Link>
-      ))}
+    <div className="@container">
+      <div className="stagger-fade-in grid grid-cols-2 @sm:grid-cols-3 @xl:grid-cols-4 gap-3">
+        {QUICK_LINKS.filter((l) => !('roles' in l) || (l.roles as readonly string[]).includes(role)).map((l) => (
+          <Link
+            key={l.to}
+            to={l.to}
+            className="group flex items-center gap-3 p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] hover:border-brand-300 dark:hover:border-brand-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 min-w-0"
+          >
+            <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-300 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6">
+              <l.icon className="w-4.5 h-4.5" size={18} />
+            </div>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{l.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -86,14 +88,14 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="stagger-fade-in grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Students" value={counts.students} icon={<Users className="w-5 h-5" />} />
         <StatCard label="Teachers" value={counts.teachers} icon={<GraduationCap className="w-5 h-5" />} tone="accent" />
         <StatCard label="Classes" value={classRooms.length} icon={<School className="w-5 h-5" />} />
         <StatCard label="Subjects" value={counts.subjects} icon={<BookOpen className="w-5 h-5" />} tone="accent" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="animate-fade-in-up grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-5">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Students per Class</h2>
           <BarChart data={classRooms.map((c) => ({ label: `${c.name} ${c.section}`, value: c.studentCount }))} />
@@ -118,9 +120,12 @@ function TodaySchedule({ entries }: { entries: TimetableEntryResponse[] }) {
       {sorted.length === 0 ? (
         <EmptyState title="Nothing scheduled today" description="Enjoy the free time." />
       ) : (
-        <ul className="divide-y divide-gray-100 dark:divide-white/5">
+        <ul className="stagger-fade-in divide-y divide-gray-100 dark:divide-white/5">
           {sorted.map((e) => (
-            <li key={e.id} className="flex items-center justify-between px-5 py-3">
+            <li
+              key={e.id}
+              className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.03]"
+            >
               <div>
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{e.subjectName}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{e.classRoomName}</p>
@@ -193,9 +198,12 @@ function StudentDashboard() {
         {grades.length === 0 ? (
           <EmptyState title="No grades yet" />
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-white/5">
+          <ul className="stagger-fade-in divide-y divide-gray-100 dark:divide-white/5">
             {grades.map((g) => (
-              <li key={g.id} className="flex items-center justify-between px-5 py-3">
+              <li
+                key={g.id}
+                className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.03]"
+              >
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{g.examName}</p>
                 <Badge tone={scoreTone(g.score, g.maxScore)}>
                   {g.score}/{g.maxScore} &middot; {scorePercent(g.score, g.maxScore)}%

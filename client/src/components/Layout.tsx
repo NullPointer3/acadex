@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -45,27 +45,28 @@ function SidebarContent({ role, onNavigate }: { role: UserRole; onNavigate?: () 
   return (
     <>
       <div className="flex items-center gap-2 px-5 h-16 shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-sm transition-transform duration-300 hover:rotate-[12deg] hover:scale-110">
           A
         </div>
         <span className="text-lg font-semibold text-gray-900 dark:text-white">Acadex</span>
       </div>
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto scrollbar-thin">
-        {NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role)).map((item) => (
+        {NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role)).map((item, i) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
             onClick={onNavigate}
+            style={{ animationDelay: `${i * 35}ms` }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              `animate-fade-in-up group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-brand-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white'
+                  ? 'bg-brand-600 text-white shadow-sm shadow-brand-600/30'
+                  : 'text-gray-600 hover:bg-gray-100 hover:pl-3.5 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white'
               }`
             }
           >
-            <item.icon className="w-4.5 h-4.5" size={18} />
+            <item.icon className="w-4.5 h-4.5 transition-transform duration-150 group-hover:scale-110" size={18} />
             {item.label}
           </NavLink>
         ))}
@@ -85,6 +86,7 @@ export function Layout() {
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   if (!user) return null;
 
@@ -98,12 +100,12 @@ export function Layout() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64 bg-white dark:bg-[#15141a] flex flex-col shadow-xl">
+          <div className="animate-fade-in absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <aside className="animate-slide-in-left absolute inset-y-0 left-0 w-64 bg-white dark:bg-[#15141a] flex flex-col shadow-xl">
             <div className="flex justify-end px-3 pt-3">
               <button
                 onClick={() => setMobileOpen(false)}
-                className="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-transform duration-150 hover:rotate-90"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -126,16 +128,18 @@ export function Layout() {
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
+              className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-transform duration-300 hover:-rotate-12 active:scale-90"
               aria-label="Toggle dark mode"
             >
-              {theme === 'dark' ? <Sun className="w-4.5 h-4.5" size={18} /> : <Moon className="w-4.5 h-4.5" size={18} />}
+              <span className="block animate-pop-in" key={theme}>
+                {theme === 'dark' ? <Sun className="w-4.5 h-4.5" size={18} /> : <Moon className="w-4.5 h-4.5" size={18} />}
+              </span>
             </button>
 
             <div className="relative">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
-                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Avatar firstName={user.firstName} lastName={user.lastName} size="sm" />
                 <span className="hidden sm:block text-sm text-left">
@@ -149,10 +153,10 @@ export function Layout() {
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1a1a20] border border-gray-200 dark:border-white/10 rounded-lg shadow-lg z-50 py-1">
+                  <div className="animate-scale-in origin-top-right absolute right-0 mt-2 w-48 bg-white dark:bg-[#1a1a20] border border-gray-200 dark:border-white/10 rounded-lg shadow-lg z-50 py-1">
                     <button
                       onClick={logout}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Log out
@@ -164,7 +168,9 @@ export function Layout() {
           </div>
         </header>
         <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8 max-w-7xl w-full mx-auto">
-          <Outlet />
+          <div key={location.pathname} className="animate-fade-in-up">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

@@ -89,7 +89,7 @@ export function DataTable<T>({
                   setPage(0);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 rounded-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
               />
             </div>
           )}
@@ -134,11 +134,12 @@ export function DataTable<T>({
                   </tr>
                 </thead>
                 <tbody>
-                  {pageRows.map((row) => (
+                  {pageRows.map((row, i) => (
                     <tr
                       key={keyFor(row)}
                       onClick={() => onRowClick?.(row)}
-                      className={`border-t border-gray-100 dark:border-white/5 ${
+                      style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
+                      className={`animate-fade-in border-t border-gray-100 dark:border-white/5 transition-colors ${
                         onRowClick ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.04]' : ''
                       }`}
                     >
@@ -161,14 +162,14 @@ export function DataTable<T>({
                   <button
                     disabled={currentPage === 0}
                     onClick={() => setPage((p) => p - 1)}
-                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-30"
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-30 transition-transform active:scale-90"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
                     disabled={currentPage >= pageCount - 1}
                     onClick={() => setPage((p) => p + 1)}
-                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-30"
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-30 transition-transform active:scale-90"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
